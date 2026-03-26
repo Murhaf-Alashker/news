@@ -18,7 +18,11 @@ class SettingFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'facebook' => 'www.facebook.com',
+            'instagram' => 'www.instagram.com',
+            'linkedin' => 'www.linkedin.com',
+            'whatsapp' => fake()->phoneNumber(),
+            'response_email' => fake()->safeEmail()
         ];
     }
 }

@@ -14,7 +14,7 @@ class Setting extends Model
         'facebook',
         'instagram',
         'whatsapp',
-        'linkedIn',
+        'linkedin',
         'response_email'
     ];
 }

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('facebook');
             $table->string('instagram');
             $table->string('whatsapp');
-            $table->string('linkedIn');
+            $table->string('linkedin');
             $table->string('response_email');
             $table->timestamps();
         });
