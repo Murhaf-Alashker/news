@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('posts', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->text('description');
+            $table->text('description')->nullable();
             $table->boolean('status')->default(true);
             $table->boolean('commentable')->default(true);
             $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete();
