@@ -15,9 +15,14 @@ return new class extends Migration
     {
         Schema::create('posts', function (Blueprint $table) {
             $table->id();
+            $table->ulid()->unique();
+            $table->bigInteger('views')->default(0);
+            $table->bigInteger('likes')->default(0);
+            $table->bigInteger('dislikes')->default(0);
+            $table->boolean('is_featured')->default(false);
             $table->string('title');
             $table->text('description')->nullable();
-            $table->boolean('status')->default(true);
+            $table->enum('status',['pending', 'approved', 'rejected'])->default('approved');
             $table->boolean('commentable')->default(true);
             $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(Category::class)->constrained()->cascadeOnDelete();

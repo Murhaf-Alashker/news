@@ -32,7 +32,7 @@ class UserFactory extends Factory
             'city' => fake()->city(),
             'phone' => fake()->phoneNumber(),
             'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
+            'password' => static::$password ??= Hash::make('Password1'),
             'remember_token' => Str::random(10),
         ];
     }

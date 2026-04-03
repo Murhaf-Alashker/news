@@ -17,6 +17,11 @@ class Category extends Model
         'status'
     ];
 
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
     public function posts(): HasMany
     {
         return $this->hasMany(Post::class);
