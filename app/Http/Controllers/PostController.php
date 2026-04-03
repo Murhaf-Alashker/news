@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\PostRequest;
+use App\Http\Resources\PostResource;
 use App\Models\Comment;
 use App\Models\Post;
 use App\Services\PostService;
@@ -19,7 +20,7 @@ class PostController extends Controller
         $this->postService = new PostService();
     }
 
-    public function show(Post $post):Post
+    public function show(Post $post):PostResource
     {
         return $this->postService->show($post);
     }
@@ -29,7 +30,7 @@ class PostController extends Controller
         return $this->postService->store($request->validated());
     }
 
-    public function update(PostRequest $request, Post $post) :Post
+    public function update(PostRequest $request, Post $post) :PostResource
     {
         $this->authorize('update', $post);
         return $this->postService->update($request->validated(), $post);

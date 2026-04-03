@@ -2,21 +2,40 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CategoryRequest;
 use App\Models\Category;
-use Illuminate\Http\Request;
+use App\Services\CategoryService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class CategoryController extends Controller
 {
-    public function index()
+    protected CategoryService $categoryService;
+
+    public function __construct()
     {
-        return Category::tap(
-            function ($query) {
-                if (Auth::guard('api-user')->check()) {
-                    return $query->where('status',1);
-                }
-                return $query;
-            })
-            ->paginate(10);
+        $this->categoryService = new CategoryService();
     }
+    public function index(): LengthAwarePaginator
+    {
+        return $this->categoryService->index();
+    }
+
+    public function store(CategoryRequest $request): JsonResponse
+    {
+        return $this->categoryService->store($request->validated());
+    }
+
+    public function update(CategoryRequest $request,Category $category): JsonResponse
+    {
+        return $this->categoryService->update($request->validated(), $category);
+    }
+
+    public function changeStatus(Category $category): JsonResponse
+    {
+        return $this->categoryService->changeStatus($category);
+    }
+
 }

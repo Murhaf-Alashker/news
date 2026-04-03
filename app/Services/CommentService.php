@@ -2,11 +2,14 @@
 
 namespace App\Services;
 
+use App\Http\Resources\CommentResource;
 use App\Models\Comment;
 use App\Models\Post;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use Ramsey\Collection\Collection;
 
 class CommentService
 {
@@ -15,14 +18,15 @@ class CommentService
      */
     public static string $FILE_PATH = 'uploads/s/';
 
-    public function getComments(Post $post): LengthAwarePaginator
+    public function getComments(Post $post) : AnonymousResourceCollection
     {
-        return $post
+        return CommentResource::collection($post
             ->comments()
             ->where('status',1)
             ->with('user')
             ->latest()
-            ->paginate(10);
+            ->paginate(10)
+    );
     }
 
     public function store(string $commentText ,Post $post):Comment

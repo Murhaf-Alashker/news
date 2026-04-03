@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Http\Resources\PostResource;
 use App\Models\Comment;
 use App\Models\Interact;
 use App\Models\Post;
@@ -30,10 +31,11 @@ class PostService
         return Post::where('status','1')->orderBy('updated_at', 'desc')->paginate(10);
     }
 
-    public function show(Post $post): Post
+    public function show(Post $post): PostResource
     {
-        $post->increment('view_count');
-        return $post
+        $post->increment('views');
+        return new PostResource(
+            $post
             ->loadCount([
             'comments' => fn($q) => $q->where('status',1)
             ])
@@ -45,13 +47,17 @@ class PostService
                         ->orderByDesc('created_at')
                         ->take(3);
                 },
-                'user'
-            ]);
+                'user',
+                'category',
+                'media'
+            ])
+        );
     }
 
     public function store(array $data): Post
     {
         $post = Post::create([
+            'ulid' => Str::ulid(),
             'title' => $data['title'],
             'description' => $data['description'] ?? null,
             'user_id' => auth()->guard('api-user')->id(),
@@ -63,10 +69,10 @@ class PostService
         }
 
         //we will return it using resource
-        return $post->load('media');
+        return $post;
     }
 
-    public function update(array $data, Post $post): Post
+    public function update(array $data, Post $post): PostResource
     {
         $post->update([
             'title' => $data['title'],
@@ -83,7 +89,7 @@ class PostService
 
 
         //we will return it using resource
-        return $post->fresh();
+        return new PostResource($post->fresh());
 
     }
 

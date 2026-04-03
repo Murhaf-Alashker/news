@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\SettingController;
@@ -11,19 +12,23 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-Route::post('/login', [UserController::class, 'login']);
+Route::get('/adminLogin', function () {
+    $admin = \App\Models\Admin::first();
+    return $admin->createToken('admin-token',['api-admin'])->plainTextToken;
+}); //done
+Route::post('/login', [UserController::class, 'login']); // done
 
 Route::prefix('posts')->group(function () {
     //Route::get('/',[]);
-    Route::get('/{post}',[PostController::class,'show']);
+    Route::get('/{post}',[PostController::class,'show'])->middleware('auth:api-user,api-admin'); //done
     Route::middleware('auth:api-user')->group(function () {
-        Route::post('/',[PostController::class,'store']);
-        Route::put('/{post}',[PostController::class,'update']);
-        Route::delete('/{post}',[PostController::class,'destroy']);
-        Route::get('/{post}/comments',[CommentController::class,'getComments']);
-        Route::post('/{post}/comments',[CommentController::class,'store']);
-        Route::put('/{post}/comments/{comment}',[CommentController::class,'update']);
-        Route::delete('/{post}/comments/{comment}',[CommentController::class,'destroy']);
+        Route::post('/',[PostController::class,'store']);//done
+        Route::put('/{post}',[PostController::class,'update']);//done
+        Route::delete('/{post}',[PostController::class,'destroy']);//done
+        Route::get('/{post}/comments',[CommentController::class,'getComments']);//done
+        Route::post('/{post}/comments',[CommentController::class,'store']);//done
+        Route::put('/{post}/comments/{comment}',[CommentController::class,'update']);//done
+        Route::delete('/{post}/comments/{comment}',[CommentController::class,'destroy']);//done
 
     });
 
@@ -35,5 +40,12 @@ Route::prefix('posts')->group(function () {
         Route::put('/{post}/changeCommentAbility',[PostController::class,'changeCommentAbility']);
 
         Route::post('setting/update',[SettingController::class,'update']);
+
+        Route::prefix('/categories')->group(function () {
+            Route::post('/',[CategoryController::class,'store']);
+            Route::put('/{category}',[CategoryController::class,'update']);
+            Route::put('/{category}/changeStatus',[CategoryController::class,'changeStatus']);
+        });
+
     });
 });
