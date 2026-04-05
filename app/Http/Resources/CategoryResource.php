@@ -19,6 +19,7 @@ class CategoryResource extends JsonResource
         $info = [
             'name' => $this->name,
             'slug' => $this->slug,
+            'posts' => PostResource::collection($this->whenLoaded('posts')),
 
         ];
         if($is_admin) {

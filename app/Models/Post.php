@@ -28,7 +28,7 @@ class Post extends Model
         'is_featured'
     ];
 
-    protected static function booted()
+    protected static function booted(): void
     {
         static::addGlobalScope( new  ActivePostScope());
     }
@@ -61,6 +61,11 @@ class Post extends Model
     public function interacts(): HasMany
     {
         return $this->hasMany(Interact::class);
+    }
+
+    public function scopeActivePosts($q)
+    {
+        return $q->where('status', 'approved');
     }
 }
 

@@ -2,28 +2,33 @@
 
 namespace App\Services;
 
-use App\Http\Requests\CategoryRequest;
 use App\Models\Category;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+
 
 class CategoryService
 {
     /**
      * Create a new class instance.
      */
-    public function index(): LengthAwarePaginator
+    public function index(): Collection
     {
-        return Category::tap(
-            function ($query) {
-                if (Auth::guard('api-user')->check()) {
-                    return $query->where('status',1);
+        return Category::with([
+            'posts' =>
+                function ($query) {
+                    $q = $query->latest();
+                    return Auth::guard('api-admin')->check() ?$q : $q->take(3);
                 }
-                return $query;
+        ])
+        ->tap(
+            function ($query) {
+                return Auth::guard('api-admin')->check() ? $query : $query->whereHas('posts');
             })
-            ->paginate(10);
+            ->inRandomOrder()
+            ->get();
     }
 
     public function store(array $data): JsonResponse

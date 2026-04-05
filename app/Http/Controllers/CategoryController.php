@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CategoryRequest;
+use App\Http\Resources\CategoryResource;
 use App\Models\Category;
 use App\Services\CategoryService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
@@ -18,9 +21,9 @@ class CategoryController extends Controller
     {
         $this->categoryService = new CategoryService();
     }
-    public function index(): LengthAwarePaginator
+    public function index(): AnonymousResourceCollection
     {
-        return $this->categoryService->index();
+        return CategoryResource::collection($this->categoryService->index());
     }
 
     public function store(CategoryRequest $request): JsonResponse

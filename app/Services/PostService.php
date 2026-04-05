@@ -3,11 +3,10 @@
 namespace App\Services;
 
 use App\Http\Resources\PostResource;
-use App\Models\Comment;
 use App\Models\Interact;
 use App\Models\Post;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -16,19 +15,47 @@ use Illuminate\Support\Str;
 class PostService
 {
     public static string $FILE_PATH = 'uploads/posts/';
-    public function latestPosts():LengthAwarePaginator
+    public function latestPosts():Collection
     {
-        return Post::latest()->paginate(10);
+        return Post::latest()->take(7)->get();
     }
 
-    public function mostPopularPosts():LengthAwarePaginator
+    public function mostPopularPosts():Collection
     {
-        return Post::withCount('comments')->orderBy('comments_count', 'desc')->paginate(10);
+        return Post::withCount([
+                'comments' =>
+                function($q)
+                {
+                    return $q
+                        ->where('created_at', '>=' , Carbon::now()->subDays(10))
+                        ->where('status',1);
+                }]
+            )
+            ->orderBy('comments_count', 'desc')
+            ->take(5)
+            ->get();
     }
 
-    public function featuredPosts():LengthAwarePaginator
+    public function featuredPosts():Collection
     {
-        return Post::where('status','1')->orderBy('updated_at', 'desc')->paginate(10);
+        return Post::where('is_featured',1)
+            ->latest()
+            ->take(4)
+            ->get();
+    }
+
+    public function mostViewedPosts():Collection
+    {
+        return Post::orderBy('views', 'desc')
+            ->take(5)
+            ->get();
+    }
+
+    public function mostLikedPosts():Collection
+    {
+        return Post::orderBy('likes', 'desc')
+            ->take(5)
+            ->get();
     }
 
     public function show(Post $post): PostResource

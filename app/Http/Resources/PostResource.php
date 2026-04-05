@@ -21,20 +21,22 @@ class PostResource extends JsonResource
         $media = $this->media()->get()->groupBy('type');
         $images = [];
         $videos = [];
-        foreach ($media['image'] as $image) {
+
+        foreach ($media['image'] ?? [] as $image) {
             $images[] = ['id' => $image->id, 'url' => Storage::disk('public')->url(PostService::$FILE_PATH.$this->id.'/image/'.$image->file_name)];
         }
 
-        foreach ($media['video'] as $video) {
+        foreach ($media['video'] ?? [] as $video) {
             $videos[] = ['id' => $video->id, 'url' => Storage::disk('public')->url(PostService::$FILE_PATH.$this->id.'/video/'.$video->file_name)];
         }
         $more_info = [
             'is_featured' => $this->is_featured,
-            'status' => $this->status ? 'active' : 'inactive',
+            'status' => $this->status ,
             'updated_at' => $this->updated_at,
         ];
 
         $for_user = [
+            'status' => $this->status ,
             'id' => $this->ulid,
             'views' => $this->views,
             'likes' => $this->likes,
@@ -42,7 +44,6 @@ class PostResource extends JsonResource
             'title' => $this->title,
             'description' => $this->description,
             'commentable' => $this->commentable,
-            'comments_count' => $this->comments_count,
             'created_at' => $this->created_at,
             'user' => $this->whenLoaded('user',fn() => new UserResource($this->user)),
             'category' => $this->whenLoaded('category', fn() => new CategoryResource($this->category)),
@@ -50,6 +51,10 @@ class PostResource extends JsonResource
             'images' => $images,
             'videos' => $videos,
         ];
+
+        if($this->comments_count ?? null){
+            $for_user['comments_count'] = $this->comments_count;
+        }
         return $user && $user->id != $this->user_id ? $for_user : array_merge($for_user, $more_info);
     }
 }

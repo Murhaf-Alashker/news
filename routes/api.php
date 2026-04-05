@@ -18,7 +18,10 @@ Route::get('/adminLogin', function () {
 }); //done
 Route::post('/login', [UserController::class, 'login']); // done
 
-Route::prefix('posts')->group(function () {
+Route::get('/', [PostController::class, 'homePage'])->middleware('auth:api-user,api-admin'); //done;
+Route::get('/categories', [CategoryController::class, 'index'])->middleware('auth:api-user,api-admin'); //done;
+
+Route::prefix('/posts')->group(function () {
     //Route::get('/',[]);
     Route::get('/{post}',[PostController::class,'show'])->middleware('auth:api-user,api-admin'); //done
     Route::middleware('auth:api-user')->group(function () {

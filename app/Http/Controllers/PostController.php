@@ -6,6 +6,7 @@ use App\Http\Requests\PostRequest;
 use App\Http\Resources\PostResource;
 use App\Models\Comment;
 use App\Models\Post;
+use App\Services\CategoryService;
 use App\Services\PostService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
@@ -15,9 +16,22 @@ class PostController extends Controller
 {
     use AuthorizesRequests;
     protected PostService $postService;
+    protected CategoryService $categoryService;
     public function __construct()
     {
         $this->postService = new PostService();
+        $this->categoryService = new CategoryService();
+    }
+
+    public function homePage(): JsonResponse
+    {
+        return response()->json([
+            'latestPosts' => PostResource::collection($this->postService->latestPosts()),
+            'mostPopularPosts' => PostResource::collection($this->postService->mostPopularPosts()),
+            'featuredPosts' => PostResource::collection($this->postService->featuredPosts()),
+            'mostViewedPosts' => PostResource::collection($this->postService->mostViewedPosts()),
+            'mostLikedPosts' => PostResource::collection($this->postService->mostLikedPosts()),
+        ]);
     }
 
     public function show(Post $post):PostResource
