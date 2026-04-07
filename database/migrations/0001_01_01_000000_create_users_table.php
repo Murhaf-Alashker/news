@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string('last_name');
             $table->string('image')->nullable();
             $table->string('email')->unique();
-            $table->string('country');
-            $table->string('city');
+            $table->string('country')->nullable();
+            $table->string('city')->nullable();
             $table->boolean('status')->default(true);
             $table->string('phone')->unique()->nullable();
             $table->timestamp('email_verified_at')->nullable();

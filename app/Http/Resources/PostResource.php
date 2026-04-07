@@ -41,7 +41,6 @@ class PostResource extends JsonResource
         ];
 
         $for_user = [
-            'status' => $this->status ,
             'id' => $this->ulid,
             'views' => $this->views,
             'likes' => $this->likes,

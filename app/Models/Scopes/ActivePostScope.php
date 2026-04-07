@@ -16,10 +16,10 @@ class ActivePostScope implements Scope
     {
         $builder->tap(
             function ($query) {
-                if (Auth::guard('api-user')->check()) {
-                    return $query->where('status','approved');
+                if (Auth::guard('api-admin')->check()) {
+                    return $query;
                 }
-                return $query;
+                return $query->where('status','approved');
             });
     }
 }

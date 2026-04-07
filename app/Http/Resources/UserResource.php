@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\User;
+use App\Services\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
@@ -22,7 +23,7 @@ class UserResource extends JsonResource
         */
         $user = Auth::guard('api-user')->user();
         $is_admin = Auth::guard('api-admin')->check();
-        $image = Storage::disk('public')->get('upload/users/'.$this->id.$this->image) ?? null;
+        $image = $this->image ?Storage::disk('public')->url(UserService::$FILE_PATH.$this->id.$this->image) : null;
         $for_user = [
             'id' => $this->ulid ?? $this->id,
             'first_name' => $this->first_name,
@@ -30,6 +31,7 @@ class UserResource extends JsonResource
             'country' => $this->country,
             'city' => $this->city,
             'image' => $image,
+            'posts' => PostResource::collection($this->whenLoaded('posts')),
 
         ];
         $more_info = [
@@ -42,6 +44,6 @@ class UserResource extends JsonResource
         {
             $for_user['phone'] = $this->phone;
         }
-        return $is_admin || $user?->id == $this->user_id ? array_merge($for_user, $more_info) : $for_user;
+        return $is_admin || $user?->id == $this->id ? array_merge($for_user, $more_info) : $for_user;
     }
 }

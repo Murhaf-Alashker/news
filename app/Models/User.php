@@ -46,6 +46,11 @@ class User extends Authenticatable
         ];
     }
 
+    public function getRouteKeyName(): string
+    {
+        return 'ulid';
+    }
+
     public function posts(): HasMany
     {
         return $this->hasMany(Post::class);
@@ -59,5 +64,10 @@ class User extends Authenticatable
     public function interacts(): HasMany
     {
         return $this->hasMany(Interact::class);
+    }
+
+    public function contacts(): HasMany
+    {
+        return $this->hasMany(ContactUs::class );
     }
 }
