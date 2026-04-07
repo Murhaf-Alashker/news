@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\PostRequest;
 use App\Http\Resources\PostResource;
-use App\Models\Comment;
 use App\Models\Post;
 use App\Services\CategoryService;
 use App\Services\PostService;
@@ -34,7 +33,7 @@ class PostController extends Controller
         ]);
     }
 
-    public function show(Post $post):PostResource
+    public function show(Post $post):JsonResponse
     {
         return $this->postService->show($post);
     }

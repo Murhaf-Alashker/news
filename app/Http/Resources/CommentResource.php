@@ -18,6 +18,7 @@ class CommentResource extends JsonResource
         $info = [
             'id' => $this->id,
             'comment' => $this->comment,
+            'created_at' => $this->created_at,
             'user' => new UserResource($this->user)
         ];
         if(Auth::guard('api-admin')->check()) {

@@ -6,7 +6,7 @@ use App\Http\Resources\PostResource;
 use App\Models\Interact;
 use App\Models\Post;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Carbon;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -17,28 +17,21 @@ class PostService
     public static string $FILE_PATH = 'uploads/posts/';
     public function latestPosts():Collection
     {
-        return Post::latest()->take(7)->get();
+        return Post::loadActiveCommentsCount()->latest()->take(7)->get();
     }
 
     public function mostPopularPosts():Collection
     {
-        return Post::withCount([
-                'comments' =>
-                function($q)
-                {
-                    return $q
-                        ->where('created_at', '>=' , Carbon::now()->subDays(10))
-                        ->where('status',1);
-                }]
-            )
-            ->orderBy('comments_count', 'desc')
+        return Post::orderByPopularCommentsCount()
+            ->loadActiveCommentsCount()
             ->take(5)
             ->get();
     }
 
     public function featuredPosts():Collection
     {
-        return Post::where('is_featured',1)
+        return Post::loadActiveCommentsCount()
+            ->where('is_featured',1)
             ->latest()
             ->take(4)
             ->get();
@@ -46,39 +39,28 @@ class PostService
 
     public function mostViewedPosts():Collection
     {
-        return Post::orderBy('views', 'desc')
+        return Post::loadActiveCommentsCount()
+            ->orderBy('views', 'desc')
             ->take(5)
             ->get();
     }
 
     public function mostLikedPosts():Collection
     {
-        return Post::orderBy('likes', 'desc')
+        return Post::loadActiveCommentsCount()
+            ->orderBy('likes', 'desc')
             ->take(5)
             ->get();
     }
 
-    public function show(Post $post): PostResource
+    public function show(Post $post): JsonResponse
     {
         $post->increment('views');
-        return new PostResource(
-            $post
-            ->loadCount([
-            'comments' => fn($q) => $q->where('status',1)
-            ])
-            ->load([
-                'comments' => function ($query) {
-                    return $query->with('user')
-                        ->where('status', 1)
-                        ->orderByRaw('CASE WHEN user_id = ? THEN 0 ELSE 1 END', [Auth::guard('api-user')->id()])
-                        ->orderByDesc('created_at')
-                        ->take(3);
-                },
-                'user',
-                'category',
-                'media'
-            ])
-        );
+
+        return response()->json([
+            'mainPost' => $this->showPost($post),
+            'relatedPosts' => $this->relatedPosts($post),
+        ]);
     }
 
     public function store(array $data): Post
@@ -170,6 +152,41 @@ class PostService
         ]);
 
         return response()->json(['message' => 'the users are'.$post->commentable ? '' : 'not'.' able to write comments on this post now']);
+    }
+
+    public function showPost(Post $post): PostResource
+    {
+        return new PostResource
+        (
+            $post
+                ->loadCount([
+                    'comments' => fn($q) => $q->where('status',1)
+                ])
+                ->load([
+                    'comments' => function ($query) {
+                        return $query->with('user')
+                            ->where('status', 1)
+                            ->orderByRaw('CASE WHEN user_id = ? THEN 0 ELSE 1 END', [Auth::guard('api-user')->id()])
+                            ->orderByDesc('created_at')
+                            ->take(3);
+                    },
+                    'user',
+                    'category',
+                    'media'
+                ])
+        );
+    }
+
+    public function relatedPosts(Post $post): AnonymousResourceCollection
+    {
+        return PostResource::collection(
+            Post::where('id','!=',$post->id)
+                ->where('category_id','=',$post->category_id)
+                ->loadActiveCommentsCount()
+                ->latest()
+                ->take(3)
+                ->get()
+        );
     }
 
     private function saveMedia(array $allMedia,Post $post):void

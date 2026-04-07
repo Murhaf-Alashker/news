@@ -15,14 +15,13 @@ class CategoryResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $is_admin = Auth::guard('api-admin')->check();
         $info = [
             'name' => $this->name,
             'slug' => $this->slug,
             'posts' => PostResource::collection($this->whenLoaded('posts')),
 
         ];
-        if($is_admin) {
+        if(Auth::guard('api-admin')->check()) {
             $info['status'] = $this->status ? 'active' : 'inactive';
         }
         return $info;

@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
@@ -16,7 +17,11 @@ class UserResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        /**
+        *@var User|null $user
+        */
         $user = Auth::guard('api-user')->user();
+        $is_admin = Auth::guard('api-admin')->check();
         $image = Storage::disk('public')->get('upload/users/'.$this->id.$this->image) ?? null;
         $for_user = [
             'id' => $this->ulid ?? $this->id,
@@ -37,6 +42,6 @@ class UserResource extends JsonResource
         {
             $for_user['phone'] = $this->phone;
         }
-        return $user && $user->id != $this->id ? $for_user : array_merge($for_user, $more_info);
+        return $is_admin || $user?->id == $this->user_id ? array_merge($for_user, $more_info) : $for_user;
     }
 }

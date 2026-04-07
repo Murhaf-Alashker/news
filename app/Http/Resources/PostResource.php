@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\User;
 use App\Services\PostService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -17,7 +18,11 @@ class PostResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        /**
+         * @var User|null $user
+         */
         $user = Auth::guard('api-user')->user();
+        $is_admin = Auth::guard('api-admin')->check();
         $media = $this->media()->get()->groupBy('type');
         $images = [];
         $videos = [];
@@ -55,6 +60,6 @@ class PostResource extends JsonResource
         if($this->comments_count ?? null){
             $for_user['comments_count'] = $this->comments_count;
         }
-        return $user && $user->id != $this->user_id ? $for_user : array_merge($for_user, $more_info);
+        return $is_admin || $user?->id == $this->user_id ? array_merge($for_user, $more_info) : $for_user;
     }
 }
