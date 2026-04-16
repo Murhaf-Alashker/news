@@ -7,7 +7,7 @@ use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Services\UserService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Request;
@@ -30,6 +30,16 @@ class UserController extends Controller
         return response()->json(['user' => $user,'token' => $token], 200);
     }
 
+    public function index(Request $request):AnonymousResourceCollection
+    {
+        $status = null;
+        if(in_array($request->query('status'), ['0', '1', 0, 1], true))
+        {
+            $status =(bool) $request->query('status');
+        }
+        return $this->userService->index($status);
+    }
+
     public function showProfile(User $user): UserResource
     {
         return $this->userService->show($user);
@@ -40,7 +50,7 @@ class UserController extends Controller
         return $this->userService->showProfileForOwnerOrAdmin();
     }
 
-    public function getUserPosts(User $user):LengthAwarePaginator
+    public function getUserPosts(User $user):AnonymousResourceCollection
     {
         return $this->userService->getUserPostsByType($user);
     }

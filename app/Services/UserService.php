@@ -3,11 +3,12 @@
 namespace App\Services;
 
 
+use App\Http\Resources\PostResource;
 use App\Http\Resources\UserResource;
 use App\Models\Scopes\ActivePostScope;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Storage;
@@ -29,9 +30,17 @@ class UserService
         return $this->showProfileForOwnerOrAdmin($user);
     }
 
+    public function index(?bool $status):AnonymousResourceCollection
+    {
+        return UserResource::collection(
+            User::withCount(['posts', 'comments'])
+                ->when(!is_null($status), fn ($q) => $q->where('status', $status))
+                ->paginate(10));
+    }
+
     public function showProfileForUsers(User $user): UserResource
     {
-        return new UserResource($user);
+        return new UserResource($user->loadCount(['posts','comments']));
 
     }
     public function showProfileForOwnerOrAdmin(?User $user = null): UserResource
@@ -39,7 +48,7 @@ class UserService
         if(!$user) {
             $user = Auth::guard('api-user')->user();
         }
-        return new UserResource($user);
+        return new UserResource($user->loadCount(['posts','comments']));
 
     }
 
@@ -59,7 +68,7 @@ class UserService
         ]);
     }
 
-    public function getUserPostsByType(User $user):LengthAwarePaginator
+    public function getUserPostsByType(User $user):AnonymousResourceCollection
     {
         $ownerOrAdmin = false;
         $user_id = Auth::guard('api-user')->id();
@@ -69,15 +78,15 @@ class UserService
         return $this->getUserPosts($user, $ownerOrAdmin);
     }
 
-    public function getUserPosts(User $user, bool $isOwnerOrAdmin): LengthAwarePaginator
+    public function getUserPosts(User $user, bool $isOwnerOrAdmin): AnonymousResourceCollection
     {
-        return $user
+        return PostResource::collection($user
             ->posts()
             ->tap(function ($query) use ($isOwnerOrAdmin) {
                 return $isOwnerOrAdmin ? $query->withoutGlobalScope(ActivePostScope::class) : $query;
             })
             ->latest()
-            ->paginate(15);
+            ->paginate(15));
     }
 
     public function changeImage(Request $request):JsonResponse

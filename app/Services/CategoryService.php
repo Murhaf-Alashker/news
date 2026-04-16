@@ -2,9 +2,10 @@
 
 namespace App\Services;
 
+use App\Http\Resources\CategoryResource;
 use App\Models\Category;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Collection;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
@@ -14,21 +15,42 @@ class CategoryService
     /**
      * Create a new class instance.
      */
-    public function index(): Collection
+    public function index(): AnonymousResourceCollection
     {
-        return Category::with([
+        return Auth::guard('api-user')->check() ? $this->indexForUsers() : $this->indexForAdmin();
+    }
+
+    private function indexForUsers(): AnonymousResourceCollection
+    {
+        return CategoryResource::collection(Category::with([
             'posts' =>
                 function ($query) {
-                    $q = $query->latest();
-                    return Auth::guard('api-admin')->check() ?$q : $q->take(3);
+                    return $query->latest()->take(3);
                 }
         ])
-        ->tap(
-            function ($query) {
-                return Auth::guard('api-admin')->check() ? $query : $query->whereHas('posts');
-            })
+            ->whereHas('posts')
             ->inRandomOrder()
-            ->get();
+            ->get()
+        );
+    }
+
+    private function indexForAdmin():AnonymousResourceCollection
+    {
+        return CategoryResource::collection(
+            Category::withCount('posts')
+            ->withCount('posts.comments')
+            ->withSum('posts', 'likes')
+            ->withSum('posts', 'dislikes')
+            ->withSum('posts', 'views')
+            ->paginate(15)
+        );
+    }
+
+    public function onlyNameAndSlug()
+    {
+        return CategoryResource::collection(
+            Category::get()
+        );
     }
 
     public function store(array $data): JsonResponse

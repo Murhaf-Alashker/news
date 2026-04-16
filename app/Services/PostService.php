@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Http\Resources\PostResource;
+use App\Models\Category;
 use App\Models\Interact;
 use App\Models\Post;
 use Illuminate\Http\JsonResponse;
@@ -24,6 +25,7 @@ class PostService
     {
         return Post::orderByPopularCommentsCount()
             ->loadActiveCommentsCount()
+            ->with('category')
             ->take(5)
             ->get();
     }
@@ -31,6 +33,7 @@ class PostService
     public function featuredPosts():Collection
     {
         return Post::loadActiveCommentsCount()
+            ->with('category')
             ->where('is_featured',1)
             ->latest()
             ->take(4)
@@ -40,6 +43,7 @@ class PostService
     public function mostViewedPosts():Collection
     {
         return Post::loadActiveCommentsCount()
+            ->with('category')
             ->orderBy('views', 'desc')
             ->take(5)
             ->get();
@@ -48,6 +52,7 @@ class PostService
     public function mostLikedPosts():Collection
     {
         return Post::loadActiveCommentsCount()
+            ->with('category')
             ->orderBy('likes', 'desc')
             ->take(5)
             ->get();
@@ -70,7 +75,7 @@ class PostService
             'title' => $data['title'],
             'description' => $data['description'] ?? null,
             'user_id' => auth()->guard('api-user')->id(),
-            'category_id' => $data['category_id'],
+            'category_id' => Category::where('slug', $data['category'])->first()->id,
         ]);
 
         if(array_key_exists('media',$data)){

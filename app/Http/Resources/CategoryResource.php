@@ -23,6 +23,11 @@ class CategoryResource extends JsonResource
         ];
         if(Auth::guard('api-admin')->check()) {
             $info['status'] = $this->status ? 'active' : 'inactive';
+            $info['comments_count'] = $this->posts_comments_count ?? 0;
+            $info['posts_count'] = $this->posts_count ?? 0;
+            $info['posts_sum_views'] = $this->posts_sum_views ?? 0;
+            $info['posts_sum_likes'] = $this->posts_sum_likes ?? 0;
+            $info['posts_sum_dislikes'] = $this->posts_sum_likes ?? 0;
         }
         return $info;
     }

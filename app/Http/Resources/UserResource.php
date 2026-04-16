@@ -31,19 +31,18 @@ class UserResource extends JsonResource
             'country' => $this->country,
             'city' => $this->city,
             'image' => $image,
+            'posts_count' => $this->posts_count ?? 0,
+            'comments_count' => $this->posts_comments_count ?? 0,
+            'created_at' => $this->created_at,
             'posts' => PostResource::collection($this->whenLoaded('posts')),
 
         ];
         $more_info = [
             'email' => $this->email,
             'status' => $this->status ? 'active' : 'inactive',
-            'created_at' => $this->created_at
-        ];
+            'phone' => $this->phone,
 
-        if ($this->phone)
-        {
-            $for_user['phone'] = $this->phone;
-        }
+        ];
         return $is_admin || $user?->id == $this->id ? array_merge($for_user, $more_info) : $for_user;
     }
 }

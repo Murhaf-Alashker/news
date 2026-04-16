@@ -26,6 +26,11 @@ class CategoryController extends Controller
         return CategoryResource::collection($this->categoryService->index());
     }
 
+    public function onlyNameAndSlug()
+    {
+        return $this->categoryService->onlyNameAndSlug();
+    }
+
     public function store(CategoryRequest $request): JsonResponse
     {
         return $this->categoryService->store($request->validated());

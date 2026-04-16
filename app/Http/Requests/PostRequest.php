@@ -26,7 +26,7 @@ class PostRequest extends FormRequest
         return [
             'title' => ['required', 'string', 'max:255','min:3'],
             'description' => ['nullable', 'string', 'max:500'],
-            'category_id' => ['required', 'integer', 'exists:categories,id'],
+            'category' => ['required', 'integer', 'exists:categories,slug'],
             'media' =>['sometimes','array'],
             'media.*' => ['file','mimes:mp4,jpg','max:4000'],
             'wanted_media' =>['sometimes','array'],

@@ -9,6 +9,7 @@ use App\Services\CategoryService;
 use App\Services\PostService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Request;
 
 class PostController extends Controller
@@ -36,6 +37,11 @@ class PostController extends Controller
     public function show(Post $post):JsonResponse
     {
         return $this->postService->show($post);
+    }
+
+    public function relatedPosts(Post $post):AnonymousResourceCollection
+    {
+        return $this->postService->relatedPosts($post);
     }
     public function store(PostRequest $request) :Post
     {

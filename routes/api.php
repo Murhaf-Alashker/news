@@ -16,6 +16,7 @@ Route::post('/login', [UserController::class, 'login']); // done
 
 Route::get('/', [PostController::class, 'homePage'])->middleware('auth:api-user,api-admin'); //done;
 Route::get('/categories', [CategoryController::class, 'index'])->middleware('auth:api-user,api-admin'); //done;
+Route::get('/categories/onlyNameAndSlug', [CategoryController::class, 'onlyNameAndSlug'])->middleware('auth:api-user'); //done;
 
 Route::prefix('/posts')->group(function () {
     //Route::get('/',[]);
@@ -25,6 +26,7 @@ Route::prefix('/posts')->group(function () {
         Route::post('/',[PostController::class,'store']);//done
         Route::put('/{post}',[PostController::class,'update']);//done
         Route::delete('/{post}',[PostController::class,'destroy']);//done
+        Route::get('/{post}/relatedPosts',[PostController::class,'relatedPosts'])->middleware('auth:api-user,api-admin');
         Route::get('/{post}/comments',[CommentController::class,'getComments']);//done
         Route::post('/{post}/comments',[CommentController::class,'store']);//done
         Route::put('/{post}/comments/{comment}',[CommentController::class,'update']);//done
